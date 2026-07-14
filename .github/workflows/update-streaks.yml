@@ -3,7 +3,7 @@ name: Update Habit Streaks
 on:
   schedule:
     # Runs at 12:00 PM Mexico City time (UTC-6 = 18:00 UTC)
-    - cron: "0 18 * * *"
+    - cron: '0 18 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:
