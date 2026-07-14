@@ -1,0 +1,28 @@
+name: Update Habit Streaks
+
+on:
+  schedule:
+    # Runs at 12:00 PM Mexico City time (UTC-6 = 18:00 UTC)
+    - cron: "0 18 * * *"
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  update-streaks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run streak update
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: npm run update-streaks

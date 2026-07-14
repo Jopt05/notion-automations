@@ -1,0 +1,12 @@
+{
+  "name": "notion-automations",
+  "version": "1.0.0",
+  "description": "Automated streak calculation for Notion Habit Tracker",
+  "main": "update-streaks.js",
+  "scripts": {
+    "update-streaks": "node update-streaks.js"
+  },
+  "dependencies": {
+    "@notionhq/client": "2.2.15"
+  }
+}
