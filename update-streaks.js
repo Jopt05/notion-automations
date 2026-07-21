@@ -108,105 +108,17 @@ async function updateStreakForEntries(entries, streak) {
   }
 }
 
-async function updateDashboard(streakData) {
-  // Search for existing dashboard page
-  const search = await notion.search({
-    query: "🔥 Rachas",
-    filter: { property: "object", value: "page" },
-  });
-
-  let dashboardId = null;
-
-  for (const result of search.results) {
-    const title = result.properties?.title?.title?.[0]?.plain_text;
-    if (title === "🔥 Rachas") {
-      dashboardId = result.id;
-      break;
-    }
-  }
-
-  // Build content blocks
-  const today = new Date().toLocaleDateString("es-MX", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
-  const children = [
-    {
-      object: "block",
-      type: "paragraph",
-      paragraph: {
-        rich_text: [{ type: "text", text: { content: `Última actualización: ${today}` } }],
-      },
-    },
-    {
-      object: "block",
-      type: "paragraph",
-      paragraph: { rich_text: [{ type: "text", text: { content: "" } }] },
-    },
-  ];
-
-  // Sort by streak descending
-  const sorted = Object.entries(streakData).sort((a, b) => b[1] - a[1]);
-
-  for (const [habit, streak] of sorted) {
-    const fire = streak > 0 ? "🔥".repeat(Math.min(streak, 10)) : "❌";
-    const text = `${habit}: ${streak} día${streak !== 1 ? "s" : ""} ${fire}`;
-
-    children.push({
-      object: "block",
-      type: "bulleted_list_item",
-      bulleted_list_item: {
-        rich_text: [{ type: "text", text: { content: text } }],
-      },
-    });
-  }
-
-  if (dashboardId) {
-    // Clear existing content and replace
-    const existingBlocks = await notion.blocks.children.list({ block_id: dashboardId });
-    for (const block of existingBlocks.results) {
-      await notion.blocks.delete({ block_id: block.id });
-    }
-
-    await notion.blocks.children.append({
-      block_id: dashboardId,
-      children,
-    });
-
-    console.log("\n✅ Dashboard '🔥 Rachas' actualizado.");
-  } else {
-    // Create new page at workspace level
-    await notion.pages.create({
-      parent: { type: "workspace", workspace: true },
-      icon: { emoji: "🔥" },
-      properties: {
-        title: [{ type: "text", text: { content: "🔥 Rachas" } }],
-      },
-      children,
-    });
-
-    console.log("\n✅ Dashboard '🔥 Rachas' creado.");
-  }
-}
-
 async function main() {
   console.log("🔄 Calculando rachas...\n");
 
   const entries = await getAllEntries();
   const groups = groupByHabit(entries);
-  const streakData = {};
 
   for (const [habit, habitEntries] of Object.entries(groups)) {
     const streak = calculateStreak(habitEntries);
-    streakData[habit] = streak;
     console.log(`${habit}: ${streak} día${streak !== 1 ? "s" : ""}`);
     await updateStreakForEntries(habitEntries, streak);
   }
-
-  await updateDashboard(streakData);
 
   console.log("\n🎉 Proceso completado.");
 }
